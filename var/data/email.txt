@@ -1,0 +1,66 @@
+MIME-Version: 1.0
+Received: by 10.25.158.145 with HTTP; Sun, 1 Oct 2017 07:56:52 -0700 (PDT)
+In-Reply-To: <DM5PR10MB1514B4A365324AC226972108C27C0@DM5PR10MB1514.namprd10.prod.outlook.com>
+References: <DM5PR10MB1514B4A365324AC226972108C27C0@DM5PR10MB1514.namprd10.prod.outlook.com>
+Date: Sun, 1 Oct 2017 09:56:52 -0500
+Delivered-To: wballard@mailframe.net
+Message-ID: <CAMf2ZzwoWRSp5JjPEedi6105_LkVqMdggebK306D+9vYB868rQ@mail.gmail.com>
+Subject: Re: Hello
+From: Will Ballard <wballard@mailframe.net>
+To: William Ballard <WBallard@glgroup.com>
+Content-Type: multipart/alternative; boundary="001a1140128ce84149055a7d77cb"
+
+--001a1140128ce84149055a7d77cb
+Content-Type: text/plain; charset="UTF-8"
+
+Why thank you self, hello world to you too!
+
+On Sun, Oct 1, 2017 at 9:56 AM, William Ballard <WBallard@glgroup.com>
+wrote:
+
+> Here is a hello word email from myself.
+>
+>
+> ------------------------------
+> This e-mail message, and any attachments, is intended only for the use of
+> the individual or entity identified in the alias address of this message
+> and may contain information that is confidential, privileged and subject to
+> legal restrictions and penalties regarding its unauthorized disclosure and
+> use. Any unauthorized review, copying, disclosure, use or distribution is
+> strictly prohibited. If you have received this e-mail message in error,
+> please notify the sender immediately by reply e-mail and delete this
+> message, and any attachments, from your system. Thank you.
+> ------------------------------
+>
+
+--001a1140128ce84149055a7d77cb
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Why thank you self, hello world to you too!</div><div clas=
+s=3D"gmail_extra"><br><div class=3D"gmail_quote">On Sun, Oct 1, 2017 at 9:5=
+6 AM, William Ballard <span dir=3D"ltr">&lt;<a href=3D"mailto:WBallard@glgr=
+oup.com" target=3D"_blank">WBallard@glgroup.com</a>&gt;</span> wrote:<br><b=
+lockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px =
+#ccc solid;padding-left:1ex">
+
+
+<div dir=3D"ltr">
+<div id=3D"m_3837452222143082723divtagdefaultwrapper" style=3D"font-size:12=
+pt;color:#000000;font-family:Calibri,Helvetica,sans-serif" dir=3D"ltr">
+<p>Here is a hello word email from myself.</p>
+</div>
+
+
+<br><br><span style=3D"font-family:Arial;Font-size:10.0pt"> <hr> This e-mai=
+l message, and any attachments, is intended only for the use of the individ=
+ual or entity identified in the alias address of this message and may conta=
+in information that is confidential, privileged and subject to legal restri=
+ctions and penalties regarding its unauthorized disclosure and use. Any una=
+uthorized review, copying, disclosure, use or distribution is strictly proh=
+ibited. If you have received this e-mail message in error, please notify th=
+e sender immediately by reply e-mail and delete this message, and any attac=
+hments, from your system. Thank you. <hr> </span></div>
+</blockquote></div><br></div>
+
+--001a1140128ce84149055a7d77cb--
