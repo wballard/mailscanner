@@ -5,6 +5,9 @@ Adapters to store an individual user's email in a database.
 import os
 import sqlite3
 
+from tqdm import tqdm
+
+
 class EmailDatabase(sqlite3.Connection):
     '''
     Store email in raw RFC822 format with identifiers.
@@ -29,3 +32,36 @@ class EmailDatabase(sqlite3.Connection):
         super(EmailDatabase, self).__init__(database_filename)
         if creation_query:
             self.executescript(creation_query)
+
+
+    def sent(self, visitor, verbose=True):
+        '''
+        Visit all sent emails.
+
+        Parameters
+        ----------
+        visitor
+            A callable that receives each email text.
+        '''
+        cursor = self.cursor()
+        cursor.execute('select count(*) from sent_email')
+        count = cursor.fetchall()[0][0]
+        cursor.execute('select body from sent_email')
+        for row in tqdm(cursor.fetchall(), total=count, desc="Sent", unit='email', disable=(not verbose)):
+            visitor(row[0])
+
+    def all(self, visitor, verbose=True):
+        '''
+        Visit all emails.
+
+        Parameters
+        ----------
+        visitor
+            A callable that receives each email text.
+        '''
+        cursor = self.cursor()
+        cursor.execute('select count(*) from all_email')
+        count = cursor.fetchall()[0][0]
+        cursor.execute('select body from all_email')
+        for row in tqdm(cursor, total=count, desc="All", unit='email', disable=(not verbose)):
+            visitor(row[0])

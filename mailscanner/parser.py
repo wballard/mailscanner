@@ -15,9 +15,9 @@ def parse(rfc822_string):
 
     Returns
     -------
-    list
-        A list of tuples, in (name, value) format for each header,
-        along with a (text, ""), and (html, "") tuple with the body content.
+    dict
+        A dict of attributes, in (name, value) format for each header,
+        along with a `text` and `html` attributes for the body.
     '''
     message = email.message_from_string(rfc822_string)
     headers = list(map(parse_headers, message.items()))
@@ -31,7 +31,7 @@ def parse(rfc822_string):
             message_html.append(part.get_payload())
     text = ('text', '\n'.join(message_text))
     html = ('html', '\n'.join(message_html))
-    return headers + [text] + [html]
+    return dict(headers + [text] + [html])
 
 
 def parse_headers(header_tuple):
