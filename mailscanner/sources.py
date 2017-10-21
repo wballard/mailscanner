@@ -4,7 +4,6 @@ Classes to connect and download email to a database for further processing.
 
 import imaplib
 import os
-import sqlite3
 
 from tqdm import tqdm
 
@@ -54,6 +53,55 @@ class MailSource:
         '''
         _, data = self.mail.uid('fetch', email_identifier, '(RFC822)')
         return data[0][1]
+   
+    def download(self, email_database):
+        '''
+        Download all email. This uses a two pass algorithm to allow restart and
+        catch up to avoid the pain of downloading every email every time.
+
+        Pass 1 - get all identifiers of all email, storing them in the database.
+        Pass 2 - for all identifiers without a body, download and store the body in the database.
+
+        Parameters
+        ----------
+        email_database
+            An `EmailDatabase` instance. Email content will be stored here.
+        '''
+
+        sources = [('all_email', self.all),
+                   ('sent_email', self.sent)]
+        for table, source in sources:
+            # pass 1 -- identifiers
+            cursor = email_database.cursor()
+            identity_save = '''
+                insert or ignore into {0} (id, body)
+                values (?, null)
+            '''.format(table)
+
+            for identifier in tqdm(source(), desc=table, unit='id'):
+                cursor.execute(identity_save, (identifier.decode('utf8'),))
+            email_database.commit()
+
+            # pass 2 -- fill in email
+            cursor = email_database.cursor()
+            identity_read = '''
+                select id from {0}
+                where body is null
+            '''.format(table)
+            email_save = '''
+                update {0}
+                set body = ?
+                where id = ?
+            '''.format(table)
+            cursor.execute(identity_read)
+            for row in tqdm(cursor.fetchall(), desc=table, unit='email'):
+                identifier = row[0]
+                body = self[identifier]
+                try:
+                    cursor.execute(email_save, (body.decode('utf8'), identifier))
+                except UnicodeDecodeError:
+                    cursor.execute(email_save, ('', identifier))
+                email_database.commit()
 
 
 class GmailSource(MailSource):
@@ -88,83 +136,3 @@ class GmailSource(MailSource):
         Outbound mail you have sent.
         '''
         return self.identifiers('"[Gmail]/Sent Mail"')
-
-
-class EmailDatabase:
-    '''
-    Store email in raw RFC822 format with identifiers.
-    '''
-
-    def __init__(self, database_filename, email_source):
-        '''
-        Parameters
-        ----------
-        database_filename
-            A string, where to store the file on disk. The folder must exist.
-        email_source
-            A subclass of MailSource with an all() and sent() method.
-        '''
-        if not os.path.exists(database_filename):
-            creation_query = '''
-            create table all_email(id text, body text);
-            create unique index all_email_id on all_email(id);
-            create table sent_email(id text, body text);
-            create unique index sent_email_id on sent_email(id);
-            '''
-        else:
-            creation_query = None
-        self.email_database = sqlite3.connect(database_filename)
-        if creation_query:
-            self.email_database.executescript(creation_query)
-        self.email_source = email_source
-
-    def download(self):
-        '''
-        Download all email. This uses a two pass algorithm to allow restart and
-        catch up to avoid the pain of downloading every email every time.
-
-        Pass 1 - get all identifiers of all email, storing them in the database.
-        Pass 2 - for all identifiers without a body, download and store the body in the database.
-        '''
-
-        sources = [('all_email', self.email_source.all),
-                   ('sent_email', self.email_source.sent)]
-        for table, source in sources:
-            # pass 1 -- identifiers
-            cursor = self.email_database.cursor()
-            identity_save = '''
-                insert or ignore into {0} (id, body)
-                values (?, null)
-            '''.format(table)
-
-            for identifier in tqdm(source(), desc=table, unit='id'):
-                cursor.execute(identity_save, (identifier.decode('utf8'),))
-            self.email_database.commit()
-
-            # pass 2 -- fill in email
-            cursor = self.email_database.cursor()
-            identity_read = '''
-                select id from {0}
-                where body is null
-            '''.format(table)
-            email_save = '''
-                update {0}
-                set body = ?
-                where id = ?
-            '''.format(table)
-            cursor.execute(identity_read)
-            for row in tqdm(cursor.fetchall(), desc=table, unit='email'):
-                identifier = row[0]
-                body = self.email_source[identifier]
-                try:
-                    cursor.execute(email_save, (body.decode('utf8'), identifier))
-                except UnicodeDecodeError:
-                    cursor.execute(email_save, ('', identifier))
-                self.email_database.commit()
-
-
-
-if __name__ == '__main__':
-    g = GmailSource(os.environ['GMAIL_ADDRESS'], os.environ['GMAIL_PASSWORD'])
-    gdb = EmailDatabase('gmail.db', g)
-    gdb.download()

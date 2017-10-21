@@ -3,7 +3,6 @@ Given RFC822 text, parse email into a more structured format.
 '''
 
 import email
-import pprint
 from pathlib import Path
 
 
@@ -57,8 +56,3 @@ def parse_headers(header_tuple):
     if name == 'Date':
         value = email.utils.parsedate_tz(value)
     return (name, value)
-
-
-if __name__ == '__main__':
-    parsed = parse(Path('./var/data/email.txt').read_text())
-    pprint.pprint(parsed)
