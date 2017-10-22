@@ -16,7 +16,7 @@ import docopt
 import mailscanner
 
 if __name__ == '__main__':
-    arguments = docopt.docopt(__doc__, version='0.0.1')
+    arguments = docopt.docopt(__doc__, version=mailscanner.__version__)
     g = mailscanner.GmailSource(arguments['<email_address>'], os.environ['GMAIL_PASSWORD'] or getpass.getpass())
     gdb = mailscanner.EmailDatabase(arguments['<database>'])
     g.download(gdb)

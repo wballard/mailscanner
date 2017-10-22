@@ -2,10 +2,10 @@
 Create a dataset to learn which emails you are likely to reply to.
 '''
 
-from mailscanner import parse
+from ..parser import parse
 
 
-class Replies:
+class RepliedToDataset:
     '''
     Build a dataset of emails that generated replies, along with a balanced number of
     negative samples that did not generate a reply.
@@ -21,7 +21,7 @@ class Replies:
     Attributes
     ----------
     dataset
-        A list of (0|1, email text) tuples, where 1 indicates a reply, and 0 indicates no reply.
+        A list of (Replied|DidNotReply, email text) tuples.
     '''
 
     def __init__(self, email_database):
@@ -46,11 +46,11 @@ class Replies:
             email = parse(email)
             if replied_to.get(email.get('Message-ID'), False):
                 # a message that generated a reply!
-                self.dataset.append((1, ' '.join(map(str, email.values()))))
+                self.dataset.append(('Replied', ' '.join(map(str, email.values()))))
                 return
             # if we get here, this was not a reply, use it as a negative sample
             # if we have an odd number of entries to balance out
             if len(self.dataset) % 2 == 1:
-                self.dataset.append((0, ' '.join(map(str, email.values()))))
+                self.dataset.append(('DidNotReply', ' '.join(map(str, email.values()))))
 
         email_database.all(extract_replies)

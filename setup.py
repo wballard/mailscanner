@@ -4,7 +4,7 @@ Setup for mailscanner.
 
 from sys import platform
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.extension import Extension
 
 # Package details
@@ -17,11 +17,13 @@ setup(
     description='Tools for machine learning email',
     long_description=open('README.md', 'r').read(),
     license='BSD 3-Clause License',
-    packages=['mailscanner'],
-    scripts=['bin/download-gmail'],
+    packages=find_packages(),
+    scripts=['bin/download-gmail', 'bin/prepare-replies-dataset'],
     install_requires=[
-        'numpy>=1',
-        'future'
+        'tqdm',
+        'docopt',
+        'vectoria',
+        'smart_open'
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

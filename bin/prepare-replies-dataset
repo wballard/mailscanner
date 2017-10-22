@@ -17,9 +17,9 @@ import docopt
 import mailscanner
 
 if __name__ == '__main__':
-    arguments = docopt.docopt(__doc__, version='0.0.1')
+    arguments = docopt.docopt(__doc__, version=mailscanner.__version__)
     gdb = mailscanner.EmailDatabase(arguments['<email_database>'])
-    replies = mailscanner.datasets.Replies(gdb)
+    replies = mailscanner.datasets.RepliedToDataset(gdb)
     scrub = re.compile('[\t\r\n]')
     with open(arguments['<dataset_text>'], 'w') as dataset_text:
         for (reply, text) in replies.dataset:

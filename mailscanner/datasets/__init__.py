@@ -2,4 +2,5 @@
 Create machine learning datasets from email.
 '''
 
-from .replies import Replies
+from .replies import RepliedToDataset
+from .textfiles import LabeledTextFileDataset
