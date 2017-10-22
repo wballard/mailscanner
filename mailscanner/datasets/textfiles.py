@@ -17,6 +17,13 @@ class LabeledTextFileDataset:
         A list of text values
 
     At a given index `n` `labels[n]` is the corresponding label for `texts[n]`.
+
+    >>> import mailscanner
+    >>> dataset = mailscanner.datasets.LabeledTextFileDataset('./var/data/labeled.txt')
+    >>> dataset.labels
+    ['Good', 'Bad']
+    >>> dataset.texts
+    ['This is a good example', 'This is a bad example']
     '''
     def __init__(self, textfile_path):
         '''
@@ -33,4 +40,4 @@ class LabeledTextFileDataset:
         for line in smart_open(textfile_path):
             label, text = line.decode('utf8').split('\t')
             self.labels.append(label)
-            self.texts.append(text)
+            self.texts.append(text.strip())

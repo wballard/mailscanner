@@ -1,0 +1,2 @@
+Good	This is a good example
+Bad	This is a bad example
