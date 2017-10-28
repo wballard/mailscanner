@@ -1,3 +1,4 @@
 gmail.db
 replies.txt
 mailscanner.egg-info/
+.cache/
