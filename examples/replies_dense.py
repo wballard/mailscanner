@@ -28,7 +28,7 @@ model.compile(
     optimizer='adam',
     metrics=['accuracy']
 )
-model.summary()
+print(model.summary())
 model.fit(
     x=sources,
     y=targets,
