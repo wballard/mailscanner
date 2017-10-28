@@ -1,4 +1,5 @@
 gmail.db
 replies.txt
 mailscanner.egg-info/
+*__pycache__*
 .cache/
