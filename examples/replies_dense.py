@@ -14,7 +14,7 @@ sources = replies.texts
 # or the sequential nature of words or ngrams.
 import keras
 inputs = keras.layers.Input(shape=(replies.trigram.maxlen,))
-embedded = trigram.model(inputs)
+embedded = replies.trigram.model(inputs)
 stack = keras.layers.Dense(128, activation='relu')(embedded)
 stack = keras.layers.Dropout(0.5)(stack)
 stack = keras.layers.Dense(128, activation='relu')(stack)
