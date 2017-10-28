@@ -29,7 +29,7 @@ sources = trigram.sequencer.transform(replies.texts)
 import keras
 inputs = keras.layers.Input(shape=(trigram.maxlen,))
 embedded = trigram.model(inputs)
-recurrent = keras.layers.Bidirectional(keras.layers.LSTM(128))(embedded)
+recurrent = keras.layers.Bidirectional(keras.layers.LSTM(300, dropout=0.2, recurrent_dropout=0.2))(embedded)
 # softmax on two classes -- which map to our 0, 1 one hots
 outputs = keras.layers.Dense(2, activation='softmax')(recurrent)
 model = keras.models.Model(inputs=inputs, outputs=outputs)
@@ -44,5 +44,5 @@ model.fit(
     y=targets, 
     validation_split=0.05,
     batch_size=32,
-    epochs=16
+    epochs=32
 )

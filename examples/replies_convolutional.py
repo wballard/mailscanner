@@ -31,10 +31,13 @@ inputs = keras.layers.Input(shape=(trigram.maxlen,))
 embedded = trigram.model(inputs)
 stack = keras.layers.Conv1D(128, 3, activation='relu')(embedded)
 stack = keras.layers.MaxPooling1D(3)(stack)
+stack = keras.layers.Dropout(0.5)(stack)
 stack = keras.layers.Conv1D(128, 3, activation='relu')(stack)
 stack = keras.layers.MaxPooling1D(3)(stack)
+stack = keras.layers.Dropout(0.5)(stack)
 stack = keras.layers.Conv1D(128, 3, activation='relu')(stack)
 stack = keras.layers.MaxPooling1D(3)(stack)
+stack = keras.layers.Dropout(0.5)(stack)
 # softmax on two classes -- which map to our 0, 1 one hots
 flattened = keras.layers.Flatten()(stack)
 outputs = keras.layers.Dense(2, activation='softmax')(flattened)
@@ -50,5 +53,5 @@ model.fit(
     y=targets, 
     validation_split=0.05,
     batch_size=32,
-    epochs=16
+    epochs=32
 )
