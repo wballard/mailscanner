@@ -32,7 +32,7 @@ recurrent_backward = keras.layers.CuDNNLSTM(HIDDEN, return_sequences=True)(mails
 recurrent = keras.layers.Concatenate()([recurrent_forward, recurrent_backward])
 recurrent = keras.layers.Dropout(0.5)(recurrent)
 # now attend to the most important
-attention = mailscanner.layers.SelfAttention(activation=ACTIVATION)(recurrent)
+attention = mailscanner.layers.TimeDistributedSelfAttention(activation=ACTIVATION)(recurrent)
 # dense before final output
 stack = keras.layers.Dense(HIDDEN, activation=ACTIVATION)(attention)
 stack = keras.layers.Dropout(0.5)(stack)
