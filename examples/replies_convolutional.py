@@ -8,9 +8,6 @@ targets = replies.one_hot_labels
 sources = replies.texts
 
 # data is loaded and preprocesed, now create a keras model to encode
-# Here is a very simple -- dense -- model,
-# not taking into any real consideration the structure of text,
-# or the sequential nature of words or ngrams.
 import keras
 inputs = keras.layers.Input(shape=(replies.trigram.maxlen,))
 embedded = replies.trigram.model(inputs)
