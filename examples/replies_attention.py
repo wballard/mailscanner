@@ -8,7 +8,7 @@ targets = replies.one_hot_labels
 sources = replies.texts
 
 HIDDEN = 128
-ACTIVATION = 'elu'
+ACTIVATION = 'relu'
 
 
 # data is loaded and preprocesed, now create a keras model to encode
@@ -17,20 +17,19 @@ import keras
 inputs = keras.layers.Input(shape=(replies.trigram.maxlen,))
 # embedding to turn ngram identifiers dense
 embedded = replies.trigram.model(inputs)
+# convolution to learn word and phrase like features
 stack = keras.layers.Conv1D(HIDDEN, 3, activation=ACTIVATION)(embedded)
 stack = keras.layers.MaxPooling1D(3)(stack)
 stack = keras.layers.Conv1D(HIDDEN, 3, activation=ACTIVATION)(stack)
 stack = keras.layers.MaxPooling1D(3)(stack)
 stack = keras.layers.Conv1D(HIDDEN, 3, activation=ACTIVATION)(stack)
 stack = keras.layers.MaxPooling1D(3)(stack)
-stack = keras.layers.Dropout(0.5)(stack)
 # recurrent layer -- read the word like structures in time series order
 # note this is GPU only, and keras
 # '>=2.0.9, it is shocking slow otherwise
 recurrent_forward = keras.layers.CuDNNLSTM(HIDDEN, return_sequences=True)(stack)
 recurrent_backward = keras.layers.CuDNNLSTM(HIDDEN, return_sequences=True)(mailscanner.layers.TimeStepReverse()(stack))
 recurrent = keras.layers.Concatenate()([recurrent_forward, recurrent_backward])
-recurrent = keras.layers.Dropout(0.5)(recurrent)
 # now attend to the most important
 attention = mailscanner.layers.TimeDistributedSelfAttention(activation=ACTIVATION)(recurrent)
 # dense before final output

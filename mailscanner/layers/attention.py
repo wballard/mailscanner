@@ -33,7 +33,7 @@ class SelfAttention(Layer):
 
     def __init__(self,
                  activation=None,
-                 kernel_initializer='he_normal',
+                 kernel_initializer='glorot_uniform',
                  kernel_regularizer=None,
                  kernel_constraint=None,
                  **kwargs):
@@ -51,37 +51,43 @@ class SelfAttention(Layer):
         time_steps = input_shape[1]
         dimensions = input_shape[2]
 
-        # learn the most important time steps here by factoring out dimensions
-        self.alignment_kernel = self.add_weight(shape=(dimensions, time_steps),
-                                                initializer=self.kernel_initializer,
-                                                name='alignment_kernel',
-                                                regularizer=self.kernel_regularizer,
-                                                constraint=self.kernel_constraint)
+        self.attention = keras.models.Sequential(name='attention')
+        # starting off, each element of the batch is (time_steps, dimensions)
+        # turn this into (time_steps, 1)
 
-        # learn multiple attentions here
-        self.attention_kernel = self.add_weight(shape=(time_steps, time_steps),
-                                                initializer=self.kernel_initializer,
-                                                name='attention_kernel',
-                                                regularizer=self.kernel_regularizer,
-                                                constraint=self.kernel_constraint)
+        # attention matrix, this is the main thing being learned
+        self.attention.add(keras.layers.Dense(dimensions,
+                                              input_shape=(
+                                                  time_steps, dimensions,),
+                                              kernel_initializer=self.kernel_initializer,
+                                              kernel_regularizer=self.kernel_regularizer,
+                                              kernel_constraint=self.kernel_constraint))
+        self.attention.add(keras.layers.Activation(self.activation))
+        # now convert to an attention vector
+        self.attention.add(keras.layers.Dense(1,
+                                              kernel_initializer=self.kernel_initializer,
+                                              kernel_regularizer=self.kernel_regularizer,
+                                              kernel_constraint=self.kernel_constraint))
+        # make an attention vector
+        self.attention.add(keras.layers.Flatten())
+        self.attention.add(keras.layers.Activation('softmax'))
+        # repeat this time step weighting for each dimensions
+        self.attention.add(keras.layers.RepeatVector(dimensions))
+        # reshape to be (time_steps, dimensions)
+        self.attention.add(keras.layers.Permute([2, 1]))
+
+        # not using add_weight, so update the weighs manually
+        self.trainable_weights = self.attention.trainable_weights
+        self.non_trainable_weights = self.attention.non_trainable_weights
+
         # all done
         self.built = True
 
     def call(self, inputs):
-        # transpose to get the time dimensions facing each other and will result
-        # in a square time step matrix (batch, time_steps, time_steps)
-        alignment = K.dot(inputs, self.alignment_kernel)
-        # with an optional activation function here to introduce a non-linearity
-        if self.activation is not None:
-            alignment = self.activation(alignment)
-        # get to a square matrix of attention, (batch, time_steps, time_steps)
-        attention = K.dot(alignment, self.attention_kernel)
-        # normalize the attention vector with softmax, this is the weighting
-        attention = K.softmax(attention)
-        # make sure the softmax is over the time series
-        attention = K.permute_dimensions(attention, (0, 2, 1))
-        # now weight the input by the attention
-        return K.batch_dot(attention, inputs)
+        # build the attention matrix
+        attention = self.attention(inputs)
+        # apply the attention matrix with element wise multiplication
+        return keras.layers.Multiply()([inputs, attention])
 
     def compute_output_shape(self, input_shape):
         # there is no change in shape, the values are just weighted
@@ -127,7 +133,7 @@ class TimeDistributedSelfAttention(Layer):
 
     def __init__(self,
                  activation=None,
-                 kernel_initializer='he_normal',
+                 kernel_initializer='glorot_uniform',
                  kernel_regularizer=None,
                  kernel_constraint=None,
                  **kwargs):
@@ -170,7 +176,8 @@ class TimeDistributedSelfAttention(Layer):
         # run the time distributed model over the input
         encoded = self.timed(inputs)
         # now take the product of the encoding and the original input, combining
-        self_attended = K.batch_dot(inputs, K.permute_dimensions(encoded, (0, 2, 1)))
+        self_attended = K.batch_dot(
+            inputs, K.permute_dimensions(encoded, (0, 2, 1)))
         # 2D softmax, this ends up being a multiple dimension attention
         # with weights in each time step normalizing to probabilities
         attention = K.softmax(self_attended)
