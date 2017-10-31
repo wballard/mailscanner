@@ -15,12 +15,8 @@ sources = replies.texts
 import keras
 inputs = keras.layers.Input(shape=(replies.trigram.maxlen,))
 embedded = replies.trigram.model(inputs)
-stack = keras.layers.Dense(128, activation='relu')(embedded)
-stack = keras.layers.Dropout(0.5)(stack)
-stack = keras.layers.Dense(128, activation='relu')(stack)
-stack = keras.layers.Dropout(0.5)(stack)
 # softmax on two classes -- which map to our 0, 1 one hots
-flattened = keras.layers.Flatten()(stack)
+flattened = keras.layers.Flatten()(embedded)
 outputs = keras.layers.Dense(2, activation='softmax')(flattened)
 model = keras.models.Model(inputs=inputs, outputs=outputs)
 model.compile(
@@ -32,7 +28,7 @@ print(model.summary())
 model.fit(
     x=sources,
     y=targets,
-    validation_split=0.05,
-    batch_size=32,
-    epochs=32
+    validation_split=0.50,
+    batch_size=128,
+    epochs=256
 )
