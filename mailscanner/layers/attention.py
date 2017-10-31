@@ -100,8 +100,7 @@ class SelfAttention(Layer):
             'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
             'kernel_constraint': constraints.serialize(self.kernel_constraint),
         }
-        base_config = super(Dense, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return dict(config)
 
 
 class TimeDistributedSelfAttention(Layer):
@@ -196,5 +195,4 @@ class TimeDistributedSelfAttention(Layer):
             'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
             'kernel_constraint': constraints.serialize(self.kernel_constraint),
         }
-        base_config = super(Dense, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return dict(config)
