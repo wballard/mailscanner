@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+'''
+This is the server module to create a `connexion` application. Run it from the
+command line with python for testing.abs
+The application is named to be compatible with uwsgi.
+'''
+
+import os
+
+import connexion
+
+PORT = os.environ.get('PORT', 5000)
+DEBUG = os.environ.get('DEBUG', False)
+
+SERVER_IN = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../mailscanner')
+print(SERVER_IN )
+application = connexion.App(__name__, port=PORT, specification_dir=SERVER_IN)
+application.add_api('./server/api.yml')
+
+
+if __name__ == '__main__':
+    application.run(debug=DEBUG)

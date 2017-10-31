@@ -1,0 +1,30 @@
+swagger: "2.0"
+
+info:
+  title: Mailscanner Server
+  version: "0.0.1"
+
+paths:
+  /email/rfc822/classify:
+    post:
+      summary: Classify RFC822 Email
+      description: Generate a JSON response with a single key 'label'
+      operationId: mailscanner.server.rfc822
+      consumes:
+        - text/plain
+      produces:
+        - application/json
+      responses:
+        200:
+          description: classification response
+          schema:
+            type: string
+          examples:
+            "application/json": "{label: 'spam'}"
+      parameters:
+        - name: body
+          description: complete content of an RFC822 email
+          in: body
+          required: true
+          schema:
+            type: string

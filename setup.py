@@ -23,7 +23,8 @@ setup(
         'tqdm',
         'docopt',
         'vectoria',
-        'smart_open'
+        'smart_open',
+        'connexion'
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

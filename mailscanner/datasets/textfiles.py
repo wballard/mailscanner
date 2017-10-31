@@ -21,6 +21,8 @@ class LabeledTextFileDataset:
         One hot encoding of labels
     texts
         A 2-d tensor of string and ngram positional sequence encodings.
+    trigram
+        A `CharacterTrigramEmbedding` instance, where you can get the embedding model.
 
     At a given index `n` `labels[n]` is the corresponding label for `texts[n]`.
 
@@ -48,7 +50,7 @@ class LabeledTextFileDataset:
             label, text = line.decode('utf8').split('\t')
             label_buffer.append(label)
             text_buffer.append(text.strip())
-       
+
         label_encoder = LabelEncoder()
         onehot_encoder = Pipeline([
             ('binarizer', LabelBinarizer()),
@@ -57,5 +59,28 @@ class LabeledTextFileDataset:
         self.labels = label_encoder.fit_transform(label_buffer)
         # mildly tricky, need to wrap the array in an array
         self.one_hot_labels = onehot_encoder.fit_transform(self.labels).toarray()
+        strings = StringsDataset(text_buffer)
+        self.trigram = strings.trigram
+        self.texts = strings.texts
+
+
+class StringsDataset:
+    '''
+    Turn a list of strings into a 2d tensor of ngram sequence identifiers.
+
+    Attributes
+    ----------
+    texts
+        A 2-d tensor of string and ngram positional sequence encodings.
+    trigram
+        A `CharacterTrigramEmbedding` instance, where you can get the embedding model.
+    '''
+    def __init__(self, strings):
+        '''
+        Parameters
+        ----------
+        strings
+            A list of strings to transform.
+        '''
         self.trigram = CharacterTrigramEmbedding()
-        self.texts = self.trigram.sequencer.transform(text_buffer)
+        self.texts = self.trigram.sequencer.transform(strings)
