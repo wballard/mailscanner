@@ -1,5 +1,6 @@
 gmail.db
 replies.txt
+replies.weights
 mailscanner.egg-info/
 *__pycache__*
 .cache/

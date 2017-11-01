@@ -13,14 +13,16 @@ HIDDEN = 32
 ACTIVATION = 'selu'
 INITIALIZER = 'lecun_normal'
 
-class Ensemble:
+
+class Ensemble(keras.models.Model):
     '''
     This uses pretty much every available technique in parallel to classify text.
 
     >>> import mailscanner.models
     >>> m = mailscanner.models.Ensemble(32, 2)
-    >>> m.save('/tmp/m.model')
-    >>> m = mailscanner.models.Ensemble.load('/tmp/m.model')
+    >>> m.save_weights('/tmp/m.model')
+    >>> m = mailscanner.models.Ensemble(32, 2)
+    >>> m = m.load_weights('/tmp/m.model')
     '''
 
     def __init__(self, maxlen=1024, classes=2):
@@ -39,29 +41,37 @@ class Ensemble:
         # embedding to turn ngram identifiers dense
         embedded = trigrams.model(inputs)
 
-
         # plain old dense
-        dense = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(embedded)
+        dense = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
+            0.), kernel_initializer=INITIALIZER)(embedded)
         dense = keras.layers.Dropout(0.5)(dense)
-        dense = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(dense)
+        dense = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
+            0.), kernel_initializer=INITIALIZER)(dense)
         dense = keras.layers.Dropout(0.5)(dense)
 
         # convolution to learn word and phrase like features
-        conv = keras.layers.Conv1D(HIDDEN, 3, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(embedded)
+        conv = keras.layers.Conv1D(HIDDEN, 3, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
+            0.), kernel_initializer=INITIALIZER)(embedded)
         conv = keras.layers.MaxPooling1D(3)(conv)
-        conv = keras.layers.Conv1D(HIDDEN, 3, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(conv)
+        conv = keras.layers.Conv1D(HIDDEN, 3, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
+            0.), kernel_initializer=INITIALIZER)(conv)
         conv = keras.layers.MaxPooling1D(3)(conv)
 
         # recurrent with attention, this generates sequences
         # note this is GPU only, and keras
         # '>=2.0.9, it is shocking slow otherwise
-        recurrent_forward = keras.layers.CuDNNLSTM(HIDDEN, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(conv)
-        recurrent_backward = keras.layers.CuDNNLSTM(HIDDEN, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(TimeStepReverse()(conv))
-        recurrent = keras.layers.Concatenate()([recurrent_forward, recurrent_backward])
+        recurrent_forward = keras.layers.CuDNNLSTM(
+            HIDDEN, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(conv)
+        recurrent_backward = keras.layers.CuDNNLSTM(HIDDEN, kernel_regularizer=keras.regularizers.l2(
+            0.), kernel_initializer=INITIALIZER)(TimeStepReverse()(conv))
+        recurrent = keras.layers.Concatenate()(
+            [recurrent_forward, recurrent_backward])
 
         # now attend to the most important
-        self_attention = TimeDistributedSelfAttention(activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(conv)
-        time_attention = SelfAttention(activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(conv)
+        self_attention = TimeDistributedSelfAttention(
+            activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(conv)
+        time_attention = SelfAttention(activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
+            0.), kernel_initializer=INITIALIZER)(conv)
 
         # now make a consistent shape and ensemble together as a stack, using global max pooling
         # to take out any remaining time steps and keep the strongest signals
@@ -69,55 +79,23 @@ class Ensemble:
         conv = keras.layers.GlobalMaxPooling1D()(conv)
         self_attention = keras.layers.GlobalMaxPooling1D()(self_attention)
         time_attention = keras.layers.GlobalMaxPooling1D()(time_attention)
-        ensemble = keras.layers.Concatenate()([dense, conv, recurrent, self_attention, time_attention])
-
+        ensemble = keras.layers.Concatenate()(
+            [dense, conv, recurrent, self_attention, time_attention])
 
         # dense before final output
-        stack = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(ensemble)
+        stack = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
+            0.), kernel_initializer=INITIALIZER)(ensemble)
         stack = keras.layers.Dropout(0.5)(stack)
-        stack = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(stack)
+        stack = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
+            0.), kernel_initializer=INITIALIZER)(stack)
         stack = keras.layers.Dropout(0.5)(stack)
 
         # softmax on two classes -- which map to our 0, 1 one hots
         outputs = Dense(classes, activation='softmax')(stack)
 
-        model = keras.models.Model(inputs=inputs, outputs=outputs)
-        model.compile(
+        super(Ensemble, self).__init__(inputs=inputs, outputs=outputs)
+        self.compile(
             loss='categorical_crossentropy',
             optimizer='adam',
             metrics=['accuracy']
         )
-        self.model = model
-
-    def save(self, path):
-        """
-        Save the model using keras.
-
-        Write out the vectorizer. This doesn't use pickle, but encodes in h5py
-        in order to more effectively store the core data which are numpy arrays.
-
-        Parameters
-        ----------
-        path : string
-            File location to save the model.
-        """
-        self.model.save(path)
-
-    @classmethod
-    def load(cls, path):
-        """
-        Load up a TextVectorizer from storage using keras.
-        from #TextVectorizer.save based h5py.
-        Parameters
-        ----------
-        path : string
-            File location to restore the model.
-        """
-        instance = cls()
-        instance.model = keras.models.load_model(path, 
-            custom_objects={ 
-                'TimeStepReverse': TimeStepReverse,
-                'TimeDistributedSelfAttention': TimeDistributedSelfAttention,
-                'SelfAttention': SelfAttention
-            })
-        return instance
