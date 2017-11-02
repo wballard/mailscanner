@@ -12,3 +12,7 @@ a relatively simple format of <label> <tab> <text> with one sample per line.
 
 Note that this is a full in memory data-set, which aids training time, but may require sampling
 if your actual source data is larger than your computer!
+
+## Server
+`mailscanner.server.server` exposes a Swagger REST service that classifies email from
+text.

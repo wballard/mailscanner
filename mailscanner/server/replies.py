@@ -2,23 +2,21 @@
 Individual email handling methods.
 '''
 
-from ..parser import parse
 from ..datasets import LabeledTextFileDataset
 from ..models import Ensemble
-from vectoria import CharacterTrigramEmbedding
 
 # preload this, it has a large tensor inside
+# connexion only allows module level functions as handlers
+# so module level caching of large data is required 
+# -- beats loading in on every request!
 MODEL = None
 CODEC = None
 
-
-def load_model(path_to_weights):
-    '''
-    Restore weights into the model.
-    '''
-
-
 def load_model_codec(path_to_weights, path_to_codec):
+    '''
+    Load up the module level variables for the codec/dataset
+    and the trained machine learning model.
+    '''
     global CODEC, MODEL
     print('loading codec from', path_to_codec)
     CODEC = LabeledTextFileDataset.load(path_to_codec)
@@ -53,4 +51,3 @@ def rfc822(body):
         # cast off the numpy type
         'score': float(decode[1])
     }
-    

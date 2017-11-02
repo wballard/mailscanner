@@ -10,5 +10,3 @@ from . import models
 from .databases import EmailDatabase
 from .parser import parse
 from .sources import GmailSource
-
-__version__ = get_distribution('mailscanner').version

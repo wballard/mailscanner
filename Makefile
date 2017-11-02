@@ -8,19 +8,15 @@ test: install-dev
 .PHONY: test
 
 install:
-	python setup.py install
+	conda install --file conda-requirements.txt
+	pip install --requirement requirements.txt
 .PHONY: install
 
-upload:
-	python setup.py sdist upload
-.PHONY: upload
 
-install-dev:
-	python setup.py develop
-.PHONY: install-dev
+var/data/gmail.db:
+	@echo "run ./bin/download-gmail var/data/gmail.db <your_email_address>"
 
-
-var/data/replies.weights:
+var/data/replies.weights: var/data/gmail.db
 	./bin/prepare-replies-dataset var/data/replies.txt var/data/replies.weights var/data/replies.pickle
 
 server:

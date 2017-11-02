@@ -2,10 +2,12 @@
 Setup for mailscanner.
 '''
 
+import os
 from sys import platform
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 from setuptools.extension import Extension
+
 
 # Package details
 setup(
@@ -15,10 +17,9 @@ setup(
     author_email='wballard@mailframe.net',
     url='https://github.com/wballard/mailscanner',
     description='Tools for machine learning email',
-    long_description=open('README.md', 'r').read(),
     license='BSD 3-Clause License',
     packages=find_packages(),
-    scripts=['bin/download-gmail', 'bin/prepare-replies-dataset'],
+    scripts=['bin/download-gmail', 'bin/prepare-replies-dataset', 'bin/prepare-replies-model'],
     install_requires=[
         'tqdm',
         'docopt',

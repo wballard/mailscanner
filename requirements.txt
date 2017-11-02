@@ -1,0 +1,8 @@
+tqdm
+docopt
+vectoria
+smart_open
+connexion
+gunicorn
+keras
+tensorflow
