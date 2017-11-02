@@ -4,3 +4,4 @@ replies.weights
 mailscanner.egg-info/
 *__pycache__*
 .cache/
+var/data/replies.*

@@ -42,36 +42,60 @@ class Ensemble(keras.models.Model):
         embedded = trigrams.build_model()(inputs)
 
         # plain old dense
-        dense = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
-            0.), kernel_initializer=INITIALIZER)(embedded)
+        dense = Dense(HIDDEN, 
+            activation=ACTIVATION, 
+            kernel_regularizer=keras.regularizers.l2(0.), 
+            kernel_initializer=INITIALIZER)(embedded)
         dense = keras.layers.Dropout(0.5)(dense)
-        dense = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
-            0.), kernel_initializer=INITIALIZER)(dense)
+        dense = Dense(HIDDEN, 
+            activation=ACTIVATION, 
+            kernel_regularizer=keras.regularizers.l2(0.), 
+            kernel_initializer=INITIALIZER)(dense)
         dense = keras.layers.Dropout(0.5)(dense)
 
         # convolution to learn word and phrase like features
-        conv = keras.layers.Conv1D(HIDDEN, 3, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
-            0.), kernel_initializer=INITIALIZER)(embedded)
+        conv = keras.layers.Conv1D(HIDDEN,
+            3,
+            activation=ACTIVATION,
+            kernel_regularizer=keras.regularizers.l2(0.),
+            kernel_initializer=INITIALIZER)(embedded)
+        conv = keras.layers.Conv1D(HIDDEN,
+            3,
+            activation=ACTIVATION,
+            kernel_regularizer=keras.regularizers.l2(0.),
+            kernel_initializer=INITIALIZER)(conv)
         conv = keras.layers.MaxPooling1D(3)(conv)
-        conv = keras.layers.Conv1D(HIDDEN, 3, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
-            0.), kernel_initializer=INITIALIZER)(conv)
+        conv = keras.layers.Conv1D(HIDDEN,
+            3,
+            activation=ACTIVATION,
+            kernel_regularizer=keras.regularizers.l2(0.),
+            kernel_initializer=INITIALIZER)(conv)
+        conv = keras.layers.Conv1D(HIDDEN,
+            3,
+            activation=ACTIVATION,
+            kernel_regularizer=keras.regularizers.l2(0.),
+            kernel_initializer=INITIALIZER)(conv)
         conv = keras.layers.MaxPooling1D(3)(conv)
 
         # recurrent with attention, this generates sequences
-        # note this is GPU only, and keras
-        # '>=2.0.9, it is shocking slow otherwise
-        recurrent_forward = keras.layers.CuDNNLSTM(
-            HIDDEN, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(conv)
-        recurrent_backward = keras.layers.CuDNNLSTM(HIDDEN, kernel_regularizer=keras.regularizers.l2(
-            0.), kernel_initializer=INITIALIZER)(TimeStepReverse()(conv))
+        recurrent_forward = keras.layers.GRU(HIDDEN, 
+            dropout=0.5,
+            kernel_regularizer=keras.regularizers.l2(0.), 
+            kernel_initializer=INITIALIZER)(conv)
+        recurrent_backward = keras.layers.GRU(HIDDEN, 
+            dropout=0.5,
+            kernel_regularizer=keras.regularizers.l2(0.), 
+            kernel_initializer=INITIALIZER)(TimeStepReverse()(conv))
         recurrent = keras.layers.Concatenate()(
             [recurrent_forward, recurrent_backward])
 
         # now attend to the most important
-        self_attention = TimeDistributedSelfAttention(
-            activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(0.), kernel_initializer=INITIALIZER)(conv)
-        time_attention = SelfAttention(activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
-            0.), kernel_initializer=INITIALIZER)(conv)
+        time_attention = TimeDistributedSelfAttention(activation=ACTIVATION,
+            kernel_regularizer=keras.regularizers.l2(0.),
+            kernel_initializer=INITIALIZER)(conv)
+        self_attention = SelfAttention(activation=ACTIVATION,
+            kernel_regularizer=keras.regularizers.l2(0.),
+            kernel_initializer=INITIALIZER)(conv)
 
         # now make a consistent shape and ensemble together as a stack, using global max pooling
         # to take out any remaining time steps and keep the strongest signals
@@ -83,11 +107,15 @@ class Ensemble(keras.models.Model):
             [dense, conv, recurrent, self_attention, time_attention])
 
         # dense before final output
-        stack = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
-            0.), kernel_initializer=INITIALIZER)(ensemble)
+        stack = Dense(HIDDEN, 
+            activation=ACTIVATION, 
+            kernel_regularizer=keras.regularizers.l2(0.),
+            kernel_initializer=INITIALIZER)(ensemble)
         stack = keras.layers.Dropout(0.5)(stack)
-        stack = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
-            0.), kernel_initializer=INITIALIZER)(stack)
+        stack = Dense(HIDDEN, 
+            activation=ACTIVATION, 
+            kernel_regularizer=keras.regularizers.l2(0.),
+            kernel_initializer=INITIALIZER)(stack)
         stack = keras.layers.Dropout(0.5)(stack)
 
         # softmax on the numbered of labaled classes -- which map to our 0, 1 one hots
