@@ -2,4 +2,4 @@
 REST server modules.
 '''
 
-from .handlers import rfc822
+from . import replies

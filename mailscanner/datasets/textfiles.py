@@ -2,9 +2,12 @@
 Turn text files on disk into in memory tensors for use with machine learning.
 '''
 
+import pickle
+import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelBinarizer, LabelEncoder, OneHotEncoder
 from smart_open import smart_open
+
 from vectoria import CharacterTrigramEmbedding
 
 
@@ -33,7 +36,12 @@ class LabeledTextFileDataset:
     >>> dataset.texts
     array([[112284,   8220,  64853, ...,      0,      0,      0],
            [107523,  82916, 185037, ...,      0,      0,      0]], dtype=int32)
+    >>> dataset.decode_prediction([0.25, 0.75])
+    ('Good', 0.75)
+    >>> dataset.save('/tmp/labeled.pickle')
+    >>> readback = mailscanner.datasets.LabeledTextFileDataset.load('/tmp/labeled.pickle')
     '''
+
     def __init__(self, textfile_path):
         '''
         Read the text, and separate it.
@@ -51,17 +59,39 @@ class LabeledTextFileDataset:
             label_buffer.append(label)
             text_buffer.append(text.strip())
 
-        label_encoder = LabelEncoder()
-        onehot_encoder = Pipeline([
+        self.label_encoder = label_encoder = LabelEncoder()
+        self.onehot_encoder = onehot_encoder = Pipeline([
             ('binarizer', LabelBinarizer()),
             ('onehot', OneHotEncoder())
         ])
         self.labels = label_encoder.fit_transform(label_buffer)
         # mildly tricky, need to wrap the array in an array
-        self.one_hot_labels = onehot_encoder.fit_transform(self.labels).toarray()
+        self.one_hot_labels = onehot_encoder.fit_transform(
+            self.labels).toarray()
         strings = StringsDataset(text_buffer)
         self.trigram = strings.trigram
         self.texts = strings.texts
+
+    def decode_prediction(self, one_hot):
+        '''
+        Given a set of one-hot encoded values, return the labels and prediction values.
+        '''
+        winner = np.argmax(one_hot)
+        label = self.label_encoder.inverse_transform([winner])
+        return (label[0], one_hot[winner])
+
+    def save(self, path_to_file):
+        '''
+        Save this dataset off to a pickle.
+        '''
+        pickle.dump(self, open(path_to_file, 'wb'))
+
+    @classmethod
+    def load(cls, path_to_file):
+        '''
+        Load up a pickled dataset.
+        '''
+        return pickle.load(open(path_to_file, 'rb'))
 
 
 class StringsDataset:
@@ -75,6 +105,7 @@ class StringsDataset:
     trigram
         A `CharacterTrigramEmbedding` instance, where you can get the embedding model.
     '''
+
     def __init__(self, strings):
         '''
         Parameters

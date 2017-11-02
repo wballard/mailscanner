@@ -18,28 +18,28 @@ class Ensemble(keras.models.Model):
     '''
     This uses pretty much every available technique in parallel to classify text.
 
+    >>> import mailscanner
+    >>> dataset = mailscanner.datasets.LabeledTextFileDataset('./var/data/labeled.txt') 
     >>> import mailscanner.models
-    >>> m = mailscanner.models.Ensemble(32, 2)
+    >>> m = mailscanner.models.Ensemble(dataset)
     >>> m.save_weights('/tmp/m.model')
-    >>> m = mailscanner.models.Ensemble(32, 2)
+    >>> m = mailscanner.models.Ensemble(dataset)
     >>> m = m.load_weights('/tmp/m.model')
     '''
 
-    def __init__(self, maxlen=1024, classes=2):
+    def __init__(self, source_dataset):
         '''
         Parameters
         ----------
-        sequence_length: int
-            Number of input sequence steps.
-        classes: int
-            Number of total output classes, one hot.
+        source_dataset: `LabeledTextFileDataset`
+            Contains the source and target data to derive the shape and encoding of the model.
         '''
-        trigrams = CharacterTrigramEmbedding(maxlen=maxlen)
+        trigrams = source_dataset.trigram
 
         inputs = keras.layers.Input(shape=(trigrams.maxlen,))
 
         # embedding to turn ngram identifiers dense
-        embedded = trigrams.model(inputs)
+        embedded = trigrams.build_model()(inputs)
 
         # plain old dense
         dense = Dense(HIDDEN, activation=ACTIVATION, kernel_regularizer=keras.regularizers.l2(
@@ -90,8 +90,8 @@ class Ensemble(keras.models.Model):
             0.), kernel_initializer=INITIALIZER)(stack)
         stack = keras.layers.Dropout(0.5)(stack)
 
-        # softmax on two classes -- which map to our 0, 1 one hots
-        outputs = Dense(classes, activation='softmax')(stack)
+        # softmax on the numbered of labaled classes -- which map to our 0, 1 one hots
+        outputs = Dense(len(source_dataset.label_encoder.classes_), activation='softmax')(stack)
 
         super(Ensemble, self).__init__(inputs=inputs, outputs=outputs)
         self.compile(
