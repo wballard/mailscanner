@@ -20,11 +20,10 @@ def load_model_codec(path_to_weights, path_to_codec):
     global CODEC, MODEL
     print('loading codec from', path_to_codec)
     CODEC = LabeledTextFileDataset.load(path_to_codec)
-    MODEL = Ensemble(CODEC)
     print('loading weights from', path_to_weights)
+    MODEL = Ensemble(CODEC)
     MODEL.load_weights(path_to_weights)
     print(MODEL.summary())
-    print(CODEC.trigram)
 
 
 def rfc822(body):

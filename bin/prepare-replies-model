@@ -16,13 +16,14 @@ import keras
 import pickle
 
 if __name__ == '__main__':
-    arguments = docopt.docopt(__doc__, version=mailscanner.__version__)
+    arguments = docopt.docopt(__doc__)
     replies = mailscanner.datasets.LabeledTextFileDataset(
         arguments['<replies_text_dataset>'])
     targets = replies.one_hot_labels
     sources = replies.texts
     model = mailscanner.models.Ensemble(replies)
     
+    print(model.summary())
     #saved encoder
     replies.save(arguments['<output_model_codec>'])
 
@@ -37,4 +38,3 @@ if __name__ == '__main__':
         epochs=256,
         callbacks=[save_best_weights]
     )
-    print(model.summary())

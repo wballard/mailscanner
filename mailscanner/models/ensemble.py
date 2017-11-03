@@ -78,12 +78,10 @@ class Ensemble(keras.models.Model):
         conv = keras.layers.MaxPooling1D(3)(conv)
 
         # recurrent with attention, this generates sequences
-        recurrent_forward = keras.layers.GRU(HIDDEN, 
-            dropout=0.5,
+        recurrent_forward = keras.layers.LSTM(HIDDEN, 
             kernel_regularizer=keras.regularizers.l2(0.), 
             kernel_initializer=INITIALIZER)(conv)
-        recurrent_backward = keras.layers.GRU(HIDDEN, 
-            dropout=0.5,
+        recurrent_backward = keras.layers.LSTM(HIDDEN, 
             kernel_regularizer=keras.regularizers.l2(0.), 
             kernel_initializer=INITIALIZER)(TimeStepReverse()(conv))
         recurrent = keras.layers.Concatenate()(

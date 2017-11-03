@@ -60,14 +60,11 @@ class LabeledTextFileDataset:
             text_buffer.append(text.strip())
 
         self.label_encoder = label_encoder = LabelEncoder()
-        self.onehot_encoder = onehot_encoder = Pipeline([
-            ('binarizer', LabelBinarizer()),
-            ('onehot', OneHotEncoder())
-        ])
+        self.label_binarizer = label_binarizer = LabelBinarizer()
+        self.onehot_encoder = onehot_encoder = OneHotEncoder()
         self.labels = label_encoder.fit_transform(label_buffer)
+        self.one_hot_labels = OneHotEncoder().fit_transform(LabelBinarizer().fit_transform(self.labels)).toarray()
         # mildly tricky, need to wrap the array in an array
-        self.one_hot_labels = onehot_encoder.fit_transform(
-            self.labels).toarray()
         strings = StringsDataset(text_buffer)
         self.trigram = strings.trigram
         self.texts = strings.texts

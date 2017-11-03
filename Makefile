@@ -3,7 +3,7 @@
 WORKERS?=1
 PORT?=5000
 
-test: install-dev
+test:
 	pytest --doctest-modules mailscanner
 .PHONY: test
 
