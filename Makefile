@@ -4,13 +4,11 @@ test: install-dev
 .PHONY: test
 
 install:
-	python setup.py install
+	conda install --file conda-requirements.txt
+	pip install --requirement requirements.txt
 .PHONY: install
 
 upload:
 	python setup.py sdist upload
 .PHONY: upload
 
-install-dev:
-	python setup.py develop
-.PHONY: install-dev
