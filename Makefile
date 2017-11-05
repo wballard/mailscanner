@@ -14,10 +14,14 @@ install:
 
 
 var/data/gmail.db:
-	@echo "run ./bin/download-gmail var/data/gmail.db <your_email_address>"
+	python download-gmail.py var/data/gmail.db
+.PHONY: var/data/gmail.db
 
-var/data/replies.weights: var/data/gmail.db
-	./bin/prepare-replies-dataset var/data/replies.txt var/data/replies.weights var/data/replies.pickle
+var/data/replies.txt: var/data/gmail.db
+	python prepare-replies-dataset.py var/data/gmail.db var/data/replies.txt
+
+var/data/replies.weights: var/data/replies.txt
+	python prepare-replies-model.py var/data/replies.txt var/data/replies.weights var/data/replies.pickle
 
 server:
 	gunicorn -w $(WORKERS) -b 0.0.0.0:$(PORT) --timeout 400 mailscanner.server.server:application

@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 '''
-prepare-replies-dataset
+prepare-replies-dataset.py
 
 Usage:
-    prepare-replies-dataset <email_database> <dataset_text>
+    prepare-replies-dataset.py <email_database> <dataset_text>
 
 Prepare a text dataset from email replies, each line will be:
 0 <tab> text of email without reply
@@ -15,6 +14,9 @@ import re
 import docopt
 
 import mailscanner
+
+import sys
+sys.setdefaultencoding('utf-8')
 
 if __name__ == '__main__':
     arguments = docopt.docopt(__doc__)

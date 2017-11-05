@@ -1,19 +1,19 @@
-#!/usr/bin/env python
 '''
-prepare-replies-model
+prepare-replies-model.py
 
 Usage:
-    prepare-replies-model <replies_text_dataset> <output_model_weights> <output_model_codec>
+    prepare-replies-model.py <replies_text_dataset> <output_model_weights> <output_model_codec>
 
 Take a replies labled text dataset and then train and save a useable
 model.
 '''
 
-import docopt
-None
-import mailscanner
-import keras
 import pickle
+
+import docopt
+import keras
+
+import mailscanner
 
 if __name__ == '__main__':
     arguments = docopt.docopt(__doc__)

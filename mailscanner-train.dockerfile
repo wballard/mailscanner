@@ -7,15 +7,14 @@ COPY ./bin /mailscanner/bin
 COPY ./Makefile /mailscanner/
 COPY ./*.txt /mailscanner/
 COPY ./*.py /mailscanner/
-COPY ./var/data/replies.pickle /mailscanner/var/data
-COPY ./var/data/replies.weights /mailscanner/var/data
 
 #packages needed by our server
 RUN cd /mailscanner && make install
 
+#mount in the local var 
+VOLUME /mailscanner/var
 
-#serve up REST endpoint
+#make the model
 USER keras
 WORKDIR /mailscanner
-EXPOSE 5000
-CMD PORT=5000 make server
+CMD make var/data/replies.weights
