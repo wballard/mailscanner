@@ -9,9 +9,9 @@ from vectoria import CharacterTrigramEmbedding
 
 from ..layers import TimeDistributedSelfAttention, TimeStepReverse, SelfAttention
 
-HIDDEN = 32
-ACTIVATION = 'selu'
-INITIALIZER = 'lecun_normal'
+HIDDEN = 40
+ACTIVATION = 'relu'
+INITIALIZER = 'he_normal'
 
 
 class Ensemble(keras.models.Model):

@@ -29,12 +29,18 @@ if __name__ == '__main__':
 
     # run with callback to save the best performing weights
     save_best_weights = keras.callbacks.ModelCheckpoint(
-        arguments['<output_model_weights>'], save_best_only=True, save_weights_only=True, verbose=True)
-    model.fit(
+        arguments['<output_model_weights>'], 
+        monitor='val_acc',
+        save_best_only=True, 
+        save_weights_only=True, 
+        verbose=True)
+    early_exit = keras.callbacks.EarlyStopping(monitor='val_acc', patience=4)
+    hist = model.fit(
         x=sources,
         y=targets,
-        validation_split=0.01,
+        validation_split=0.1,
         batch_size=128,
         epochs=256,
-        callbacks=[save_best_weights]
+        callbacks=[save_best_weights, early_exit]
     )
+    print(hist.history['val_acc'])
