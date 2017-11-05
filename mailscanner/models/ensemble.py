@@ -9,8 +9,8 @@ from vectoria import CharacterTrigramEmbedding
 
 from ..layers import TimeDistributedSelfAttention, TimeStepReverse, SelfAttention
 
-HIDDEN = 40
-ACTIVATION = 'relu'
+HIDDEN = 64
+ACTIVATION = 'tanh'
 INITIALIZER = 'he_normal'
 
 
