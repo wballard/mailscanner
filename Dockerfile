@@ -1,17 +1,13 @@
 FROM mailscanner-base
 
 
-#all the code, not including the ./var/data
+# all the code
 COPY ./mailscanner /mailscanner/mailscanner
-COPY ./bin /mailscanner/bin
 COPY ./Makefile /mailscanner/
-COPY ./*.txt /mailscanner/
-COPY ./*.py /mailscanner/
-COPY ./var/data/replies.pickle /mailscanner/var/data
-COPY ./var/data/replies.weights /mailscanner/var/data
 
-#packages needed by our server
-RUN cd /mailscanner && make install
+# all the trained model data
+COPY ./var/data/replies.pickle /mailscanner/var/data/
+COPY ./var/data/replies.weights /mailscanner/var/data/
 
 
 #serve up REST endpoint
