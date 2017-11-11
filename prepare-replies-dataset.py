@@ -15,15 +15,13 @@ import docopt
 
 import mailscanner
 
-import sys
-sys.setdefaultencoding('utf-8')
 
 if __name__ == '__main__':
     arguments = docopt.docopt(__doc__)
     gdb = mailscanner.EmailDatabase(arguments['<email_database>'])
     replies = mailscanner.datasets.RepliedToDataset(gdb)
     scrub = re.compile('[\t\r\n]')
-    with open(arguments['<dataset_text>'], 'w') as dataset_text:
+    with open(arguments['<dataset_text>'], mode='w', encoding='utf8') as dataset_text:
         for (reply, text) in replies.dataset:
             text = scrub.sub(' ', text)
             dataset_text.write('{0}\t{1}\n'.format(reply, text))

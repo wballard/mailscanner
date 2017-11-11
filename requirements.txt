@@ -1,8 +1,8 @@
 tqdm
 docopt
-vectoria
+vectoria==0.0.5
 smart_open
 connexion
 gunicorn
-keras
-tensorflow
+keras>=2.0.9
+tensorflow>=1.4.0
